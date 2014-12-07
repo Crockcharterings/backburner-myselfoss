@@ -3,6 +3,8 @@ myselfoss
 
 Portable dockerized selfoss.
 
+**not ready yet try wait**
+
 
 ### admin notes
     

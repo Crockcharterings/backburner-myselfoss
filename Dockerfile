@@ -1,8 +1,19 @@
-FROM nginx
-RUN rm /etc/nginx/conf.d/default.conf
-RUN rm /etc/nginx/conf.d/example_ssl.conf
-COPY site /usr/nginx/share/html
-ADD nginx.conf /etc/nginx/
-VOLUME /usr/nginx/share/html
-VOLUME /etc/nginx
-EXPOSE 80:32768
+FROM centos:centos7
+MAINTAINER Trevor Alexander talex@privatdemail.net
+RUN rpm -Uvh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm
+RUN yum install epel-release -y
+RUN yum update -y && yum install nginx php-fpm php-mysql -y
+RUN mkdir /var/wwwlogs
+# Copy the original settings. Note that the files must be inside the build directory.
+COPY nginx.conf /etc/nginx/nginx.conf
+COPY site /etc/nginx/sites-enabled/default/
+COPY site /etc/nginx/sites-available/default/
+# COPY conf.d /etc/nginx/conf.d
+# ADD run.sh /run.sh
+# Replace apache user with our own user
+RUN sed -ie 's/apache/myselfoss/g' /etc/php-fpm.d/www.conf
+# Match user id with running system for php-fpm.
+RUN groupadd -g 501 myselfoss && useradd -M -u 501 -g 501 myselfoss -s /sbin/nologin
+EXPOSE 80
+# ENTRYPOINT /run.sh
+ENTRYPOINT /usr/sbin/php-fpm -D && /usr/sbin/nginx

@@ -6,14 +6,16 @@ RUN yum update -y && yum install nginx php-fpm php-mysql -y
 RUN mkdir /var/wwwlogs
 # Copy the original settings. Note that the files must be inside the build directory.
 COPY nginx.conf /etc/nginx/nginx.conf
-COPY site /etc/nginx/sites-enabled/default/
-COPY site /etc/nginx/sites-available/default/
-# COPY conf.d /etc/nginx/conf.d
-# ADD run.sh /run.sh
+# ADD site /usr/share/nginx/html
+# VOLUME /usr/share/nginx/html
+# COPY site /etc/nginx/sites-enabled/default/
+# COPY site /etc/nginx/sites-available/default/ 
 # Replace apache user with our own user
 RUN sed -ie 's/apache/myselfoss/g' /etc/php-fpm.d/www.conf
 # Match user id with running system for php-fpm.
 RUN groupadd -g 501 myselfoss && useradd -M -u 501 -g 501 myselfoss -s /sbin/nologin
 EXPOSE 80
-# ENTRYPOINT /run.sh
 ENTRYPOINT /usr/sbin/php-fpm -D && /usr/sbin/nginx
+
+# run with:
+# docker run -p 8080:80 -v site:/usr/share/nginx/html --name myselfoss1 myselfoss
